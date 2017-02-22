@@ -1,5 +1,8 @@
 FROM ubuntu:latest
 RUN apt-get -q update -y
+RUN apt-get install -y software-properties-common
+RUN add-apt-repository -y universe
+RUN apt-get -q update -y
 RUN apt-get -qq install -y cmake gfortran gcc g++ openmpi-bin libopenmpi-dev gmsh pegtl-dev libpugixml-dev libpstreams-dev libboost-all-dev liblapack-dev liblapacke-dev libhdf5-dev libhdf5-openmpi-dev libhypre-dev 
 RUN wget -O /usr/bin/doxy-coverage https://raw.githubusercontent.com/alobbs/doxy-coverage/master/doxy-coverage.py
 RUN chmod +x /usr/bin/doxy-coverage

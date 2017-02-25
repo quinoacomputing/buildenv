@@ -1,7 +1,5 @@
 FROM gentoo/stage3-amd64
 RUN gcc-config 1
-ENV https_proxy=proxyout:8080
-ENV http_proxy=proxyout:8080
 RUN emerge --quiet --sync
 RUN emerge --quiet layman flaggie dev-python/pip
 RUN layman -S

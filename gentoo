@@ -1,7 +1,9 @@
 FROM gentoo/stage3-amd64
 RUN gcc-config 1
-RUN emerge --sync
-RUN emerge layman flaggie
+ENV https_proxy=proxyout:8080
+ENV http_proxy=proxyout:8080
+RUN emerge --quiet --sync
+RUN emerge --quiet layman flaggie dev-python/pip
 RUN layman -S
 RUN layman -a science
 env EPYTHON=python2.7
@@ -25,6 +27,7 @@ RUN flaggie app-admin/eselect::science +~amd64
 RUN flaggie virtual/mpi +romio
 RUN flaggie sci-libs/hdf5 +mpi
 RUN flaggie sys-cluster/openmpi +romio
+RUN emerge -1 --quiet boost sys-cluster/charm
 
 RUN flaggie sci-physics/quinoa-9999 +**
 

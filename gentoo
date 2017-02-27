@@ -29,7 +29,7 @@ RUN emerge -1 --quiet boost sys-cluster/charm
 
 RUN flaggie sci-physics/quinoa-9999 +**
 
-RUN emerge --onlydeps quinoa 
+RUN emerge --quiet --onlydeps quinoa 
 
 RUN groupadd -r quinoa
 RUN useradd -r -m -g quinoa quinoa

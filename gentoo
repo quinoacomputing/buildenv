@@ -1,12 +1,12 @@
 FROM gentoo/stage3-amd64
 RUN gcc-config 1
 RUN emerge --quiet --sync
-RUN emerge --quiet layman flaggie dev-python/pip
+RUN emerge --quiet layman flaggie dev-python/pip ccache
 RUN layman -S
 RUN layman -a science
 env EPYTHON=python2.7
 RUN flaggie dev-libs/tut +~amd64
-RUN flaggie sci-libs/hypre +~amd64
+RUN flaggie sci-libs/hypre +~amd64 +mpi
 RUN flaggie dev-libs/boost-mpl-cartesian_product +~amd64
 RUN flaggie sci-libs/trilinos +~amd64 +netcdf
 RUN flaggie dev-libs/pegtl +~amd64
@@ -25,6 +25,8 @@ RUN flaggie app-admin/eselect::science +~amd64
 RUN flaggie virtual/mpi +romio
 RUN flaggie sci-libs/hdf5 +mpi
 RUN flaggie sys-cluster/openmpi +romio
+RUN flaggie sys-devel/llvm +clang
+RUN emerge -1 --quiet clang
 RUN emerge -1 --quiet boost sys-cluster/charm
 
 RUN flaggie sci-physics/quinoa-9999 +**
@@ -34,6 +36,6 @@ RUN emerge --quiet --onlydeps quinoa
 RUN groupadd -r quinoa
 RUN useradd -r -m -g quinoa quinoa
 USER quinoa
-ENV PATH=/usr/lib/ccache:${PATH}${PATH:+:}
+ENV PATH=/usr/lib64/ccache/bin:${PATH}${PATH:+:}
 WORKDIR /home/quinoa
 RUN pip install --user codecov

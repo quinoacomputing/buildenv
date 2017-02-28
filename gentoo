@@ -6,7 +6,7 @@ RUN layman -S
 RUN layman -a science
 env EPYTHON=python2.7
 RUN flaggie dev-libs/tut +~amd64
-RUN flaggie sci-libs/hypre +~amd64 +mpi
+RUN flaggie sci-libs/hypre +~amd64 +mpi -openmp
 RUN flaggie dev-libs/boost-mpl-cartesian_product +~amd64
 RUN flaggie sci-libs/trilinos +~amd64 +netcdf
 RUN flaggie dev-libs/pegtl +~amd64

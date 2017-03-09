@@ -22,6 +22,7 @@ RUN flaggie sci-libs/lapacke-reference::science +~amd64
 RUN flaggie sci-libs/lapack-reference::science +~amd64
 RUN flaggie sci-libs/blas-reference::science +~amd64
 RUN flaggie app-admin/eselect::science +~amd64
+RUN flaggie dev-util/mad-numdiff::science +~amd64
 RUN flaggie virtual/mpi +romio
 RUN flaggie sci-libs/hdf5 +mpi
 RUN flaggie sys-cluster/openmpi +romio

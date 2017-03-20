@@ -19,7 +19,7 @@ RUN rm -rf sonar-scanner-2.8.zip build-wrapper-linux-x86.zip
 
 # Install OpenMPI
 ADD https://www.open-mpi.org/software/ompi/v2.0/downloads/openmpi-2.0.2.tar.gz /openmpi/
-RUN cd /openmpi/ && tar xzf openmpi-2.0.2.tar.gz && cd openmpi-2.0.2 && ./configure --enable-shared --disable-static --enable-mpi-cxx --prefix=/opt/openmpi && make -sj$((`cat /proc/cpuinfo | grep MHz | wc -l`)) install
+RUN cd /openmpi/ && tar xzf openmpi-2.0.2.tar.gz && cd openmpi-2.0.2 && ./configure --enable-shared --disable-static --enable-mpi-cxx --prefix=/opt/openmpi && make -sj$(grep -c processor /proc/cpuinfo) install
 ENV PATH /opt/openmpi/bin:$PATH
 ENV LD_LIBRARY_PATH /opt/openmpi/lib:$LD_LIBRARY_PATH
 RUN rm -rf /openmpi
@@ -36,6 +36,6 @@ WORKDIR /home/quinoa
 # Clone quinoa
 RUN git clone https://github.com/quinoacomputing/quinoa.git
 # Build TPLs
-RUN cd quinoa && mkdir -p tpl/build && cd tpl/build && cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl .. && make -sj$((`cat /proc/cpuinfo | grep MHz | wc -l`))
+RUN cd quinoa && mkdir -p tpl/build && cd tpl/build && cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl .. && make -sj$(grep -c processor /proc/cpuinfo)
 # Remove quinoa
 RUN rm -rf /home/quinoa/quinoa

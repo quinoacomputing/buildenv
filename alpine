@@ -1,4 +1,3 @@
-# vim: filetype=dockerfile:
 FROM alpine:latest
 
 # Install system-wide prerequisites

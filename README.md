@@ -5,6 +5,4 @@ Quinoa is a set of computational tools that enables research and numerical analy
 
 ## Organization
 
-This repository contains a set of pre-configured build environments for
-[Quinoa](https://github.com/quinoacomputing/quinoa). The images are
-automatically built at [DockerHub](https://hub.docker.com/r/quinoacomputing/buildenv/tags).
+This repository contains a set of pre-configured build environments for [Quinoa](https://github.com/quinoacomputing/quinoa). The images are automatically built at [DockerHub](https://hub.docker.com/r/quinoacomputing/buildenv/tags).

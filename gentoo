@@ -1,4 +1,5 @@
 FROM gentoo/stage3-amd64
+ARG RSYNC_PROXY
 RUN gcc-config 1
 RUN emerge --quiet --sync
 RUN emerge --quiet layman flaggie dev-python/pip ccache

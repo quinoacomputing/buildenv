@@ -2,7 +2,11 @@ FROM gentoo/stage3-amd64
 ARG RSYNC_PROXY
 RUN gcc-config 1
 RUN emerge --quiet --sync
-RUN emerge --quiet layman flaggie dev-python/pip ccache
+RUN echo 'EMERGE_DEFAULT_OPTS="--quiet --quiet-fail=n"' >> /etc/portage/make.conf
+RUN echo 'MAKEOPTS="-j16 -l32"' >> /etc/portage/make.conf
+#cannot verify trilinos.org's certificate
+RUN echo 'FETCHCOMMAND="wget -c -v -t 1 --passive-ftp --no-check-certificate --timeout=60 -O \"\${DISTDIR}/\${FILE}\" \"\${URI}\""' >> /etc/portage/make.conf 
+RUN emerge layman flaggie dev-python/pip ccache
 RUN layman -S
 RUN layman -a science
 env EPYTHON=python2.7
@@ -28,16 +32,17 @@ RUN flaggie virtual/mpi +romio
 RUN flaggie sci-libs/hdf5 +mpi
 RUN flaggie sys-cluster/openmpi +romio
 RUN flaggie sys-devel/llvm +clang
-RUN emerge -1 --quiet clang
-RUN emerge -1 --quiet boost sys-cluster/charm
+RUN emerge -1 clang
+RUN emerge -1 boost sys-cluster/charm
+RUN emerge doxygen
 
 RUN flaggie sci-physics/quinoa-9999 +**
 
-RUN emerge --quiet --onlydeps quinoa 
+RUN emerge --onlydeps quinoa 
 
 RUN groupadd -r quinoa
 RUN useradd -r -m -g quinoa quinoa
 USER quinoa
 ENV PATH=/usr/lib64/ccache/bin:${PATH}${PATH:+:}
 WORKDIR /home/quinoa
-RUN pip install --user codecov
+RUN pip install --user codecov coverxygen

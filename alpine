@@ -1,7 +1,7 @@
 FROM alpine:latest
 
 # Install system-wide prerequisites
-RUN apk update && apk add gfortran gcc g++ make boost-dev openjdk8 ccache lapack-dev openjdk8 wget bash m4 file git cmake perl grep zlib-dev libexecinfo-dev
+RUN apk update && apk add autoconf gfortran gcc g++ make boost-dev openjdk8 ccache lapack-dev openjdk8 wget bash m4 file git cmake perl grep zlib-dev libexecinfo-dev
 
 # Add glibc for sonarqube wrapper
 ADD https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.25-r0/glibc-2.25-r0.apk /

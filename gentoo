@@ -1,10 +1,10 @@
 FROM gentoo/stage3-amd64
 ARG RSYNC_PROXY
 RUN gcc-config 1
-RUN emerge --quiet --sync
 RUN echo 'EMERGE_DEFAULT_OPTS="--quiet --quiet-fail=n"' >> /etc/portage/make.conf
 RUN echo 'MAKEOPTS="-j16 -l32"' >> /etc/portage/make.conf
 RUN echo 'SYNC="rsync.us.gentoo.org"' >> /etc/portage/make.conf
+RUN emerge --quiet --sync
 #cannot verify trilinos.org's certificate
 RUN echo 'FETCHCOMMAND="wget -c -v -t 1 --passive-ftp --no-check-certificate --timeout=60 -O \"\${DISTDIR}/\${FILE}\" \"\${URI}\""' >> /etc/portage/make.conf 
 RUN emerge layman flaggie dev-python/pip ccache

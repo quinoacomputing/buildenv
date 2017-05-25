@@ -1,5 +1,6 @@
 FROM gentoo/stage3-amd64
 ARG RSYNC_PROXY
+ARG HTTP_PROXY
 RUN gcc-config 1
 RUN mkdir /usr/portage
 RUN emerge-webrsync

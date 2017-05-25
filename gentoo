@@ -3,12 +3,11 @@ ARG RSYNC_PROXY
 ARG HTTP_PROXY
 RUN gcc-config 1
 RUN mkdir -p /usr/portage
-RUN emerge-webrsync -v
+RUN emerge-webrsync
 RUN echo 'EMERGE_DEFAULT_OPTS="--quiet --quiet-fail=n"' >> /etc/portage/make.conf
 RUN echo 'MAKEOPTS="-j16 -l32"' >> /etc/portage/make.conf
 # RUN sed -i 's/gentoo.org/us.&/' /usr/share/portage/config/repos.conf
-RUN mkdir /usr/portage
-#RUN emerge --quiet --sync
+RUN emerge --quiet --sync
 #cannot verify trilinos.org's certificate
 RUN echo 'FETCHCOMMAND="wget -c -v -t 1 --passive-ftp --no-check-certificate --timeout=60 -O \"\${DISTDIR}/\${FILE}\" \"\${URI}\""' >> /etc/portage/make.conf 
 RUN emerge layman flaggie dev-python/pip ccache

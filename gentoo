@@ -1,7 +1,8 @@
 FROM gentoo/stage3-amd64
 ARG RSYNC_PROXY
 RUN gcc-config 1
-RUN ls -R ls /etc/portage/
+RUN emerge-webrsync -q
+RUN ls -R /etc/portage/
 RUN echo 'EMERGE_DEFAULT_OPTS="--quiet --quiet-fail=n"' >> /etc/portage/make.conf
 RUN echo 'MAKEOPTS="-j16 -l32"' >> /etc/portage/make.conf
 RUN sed -i 's/gentoo.org/us.&/' /etc/portage/repos.conf/gentoo.conf

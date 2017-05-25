@@ -3,7 +3,7 @@ ARG RSYNC_PROXY
 ARG HTTP_PROXY
 RUN gcc-config 1
 RUN mkdir /usr/portage
-RUN emerge-webrsync
+RUN emerge-webrsync -v
 RUN echo 'EMERGE_DEFAULT_OPTS="--quiet --quiet-fail=n"' >> /etc/portage/make.conf
 RUN echo 'MAKEOPTS="-j16 -l32"' >> /etc/portage/make.conf
 # RUN sed -i 's/gentoo.org/us.&/' /usr/share/portage/config/repos.conf

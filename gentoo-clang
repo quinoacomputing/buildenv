@@ -1,0 +1,53 @@
+FROM gentoo/stage3-amd64
+ARG RSYNC_PROXY
+ARG HTTP_PROXY
+RUN gcc-config 1
+RUN mkdir -p /usr/portage
+RUN emerge-webrsync
+RUN echo 'EMERGE_DEFAULT_OPTS="--quiet --quiet-fail=n"' >> /etc/portage/make.conf
+RUN echo 'MAKEOPTS="-j16 -l32"' >> /etc/portage/make.conf
+# RUN sed -i 's/gentoo.org/us.&/' /usr/share/portage/config/repos.conf
+RUN emerge --quiet --sync
+#cannot verify trilinos.org's certificate
+RUN echo 'FETCHCOMMAND="wget -c -v -t 1 --passive-ftp --no-check-certificate --timeout=60 -O \"\${DISTDIR}/\${FILE}\" \"\${URI}\""' >> /etc/portage/make.conf 
+RUN emerge layman flaggie dev-python/pip ccache
+RUN layman -S
+RUN layman -a science
+env EPYTHON=python2.7
+RUN flaggie dev-libs/tut +~amd64
+RUN flaggie sci-libs/hypre +~amd64 +mpi -openmp
+RUN flaggie dev-libs/boost-mpl-cartesian_product +~amd64
+RUN flaggie sci-libs/trilinos +~amd64 +netcdf
+RUN flaggie dev-libs/pegtl +~amd64
+RUN flaggie dev-cpp/random123 +~amd64
+RUN flaggie sys-cluster/charm +~amd64 +mpi
+RUN flaggie sci-libs/h5part +~amd64
+RUN flaggie dev-cpp/pstreams +~amd64
+RUN flaggie sci-libs/netcdf +mpi
+RUN flaggie virtual/lapacke::science +~amd64
+RUN flaggie virtual/lapack::science +~amd64
+RUN flaggie virtual/blas::science +~amd64
+RUN flaggie sci-libs/lapacke-reference::science +~amd64
+RUN flaggie sci-libs/lapack-reference::science +~amd64
+RUN flaggie sci-libs/blas-reference::science +~amd64
+RUN flaggie app-admin/eselect::science +~amd64
+RUN flaggie dev-util/mad-numdiff::science +~amd64
+RUN flaggie virtual/mpi +romio
+RUN flaggie sci-libs/hdf5 +mpi
+RUN flaggie sys-cluster/openmpi +romio
+RUN flaggie sys-devel/llvm +clang
+RUN emerge -1 clang
+RUN emerge -1 boost sys-cluster/charm
+RUN emerge doxygen
+
+RUN flaggie sci-physics/quinoa-9999 +**
+
+RUN emerge --onlydeps quinoa 
+
+RUN groupadd -r quinoa
+RUN useradd -r -m -g quinoa quinoa
+USER quinoa
+ENV PATH=/usr/lib64/ccache/bin${PATH:+:}${PATH}
+ENV PATH=/usr/lib64/trilinos/bin${PATH:+:}${PATH}
+WORKDIR /home/quinoa
+RUN pip install --user codecov coverxygen

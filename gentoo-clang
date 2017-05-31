@@ -36,9 +36,10 @@ RUN flaggie virtual/mpi +romio
 RUN flaggie sci-libs/hdf5 +mpi
 RUN flaggie sys-cluster/openmpi +romio
 RUN flaggie sys-devel/llvm +clang
-RUN emerge -1 clang
+RUN emerge -1 clang doxygen
+RUN echo 'CC="clang"' >> /etc/portage/make.conf
+RUN echo 'CXX="clang++"' >> /etc/portage/make.conf
 RUN emerge -1 boost sys-cluster/charm
-RUN emerge doxygen
 
 RUN flaggie sci-physics/quinoa-9999 +**
 

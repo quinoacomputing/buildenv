@@ -43,7 +43,6 @@ RUN emerge -1 boost sys-cluster/charm
 
 RUN flaggie sci-physics/quinoa-9999 +**
 
-RUN emerge -1 =sci-libs/h5part-1.6.6 || cat /var/tmp/portage/sci-libs/h5part-1.6.6/work/H5Part-1.6.6/config.log
 RUN emerge --onlydeps quinoa 
 
 RUN groupadd -r quinoa

@@ -36,8 +36,13 @@ RUN flaggie virtual/mpi +romio
 RUN flaggie sci-libs/hdf5 +mpi
 RUN flaggie sys-cluster/openmpi +romio
 RUN flaggie sys-devel/llvm +clang
-RUN flaggie sys-devel/llvm:4 +~amd64
-RUN flaggie sys-devel/clang:4 +~amd64
+RUN flaggie =sys-devel/llvm-4* +~amd64
+RUN flaggie =sys-devel/clang-4* +~amd64
+RUN flaggie =sys-libs/compiler-rt-sanitizers-4* +~amd64
+RUN flaggie =sys-devel/clang-runtime-4* +~amd64
+RUN flaggie =app-vim/llvm-vim-4* +~amd64
+RUN flaggie =sys-libs/compiler-rt-4* +~amd64
+RUN flaggie =sys-libs/libomp-4* +~amd64
 RUN emerge -1 clang doxygen
 RUN echo 'CC="clang"' >> /etc/portage/make.conf
 RUN echo 'CXX="clang++"' >> /etc/portage/make.conf

@@ -57,5 +57,6 @@ RUN useradd -r -m -g quinoa quinoa
 USER quinoa
 ENV PATH=/usr/lib64/ccache/bin${PATH:+:}${PATH}
 ENV PATH=/usr/lib64/trilinos/bin${PATH:+:}${PATH}
+ENV PATH=/usr/lib64/llvm/4/bin${PATH:+:}${PATH}
 WORKDIR /home/quinoa
 RUN pip install --user codecov coverxygen

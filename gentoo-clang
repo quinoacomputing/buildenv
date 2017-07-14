@@ -36,6 +36,13 @@ RUN flaggie virtual/mpi +romio
 RUN flaggie sci-libs/hdf5 +mpi
 RUN flaggie sys-cluster/openmpi +romio
 RUN flaggie sys-devel/llvm +clang
+RUN flaggie =sys-devel/llvm-4* +~amd64
+RUN flaggie =sys-devel/clang-4* +~amd64
+RUN flaggie =sys-libs/compiler-rt-sanitizers-4* +~amd64
+RUN flaggie =sys-devel/clang-runtime-4* +~amd64
+RUN flaggie =app-vim/llvm-vim-4* +~amd64
+RUN flaggie =sys-libs/compiler-rt-4* +~amd64
+RUN flaggie =sys-libs/libomp-4* +~amd64
 RUN emerge -1 clang doxygen
 RUN echo 'CC="clang"' >> /etc/portage/make.conf
 RUN echo 'CXX="clang++"' >> /etc/portage/make.conf
@@ -43,7 +50,6 @@ RUN emerge -1 boost sys-cluster/charm
 
 RUN flaggie sci-physics/quinoa-9999 +**
 
-RUN emerge -1 =sci-libs/h5part-1.6.6 || cat /var/tmp/portage/sci-libs/h5part-1.6.6/work/H5Part-1.6.6/config.log
 RUN emerge --onlydeps quinoa 
 
 RUN groupadd -r quinoa
@@ -51,5 +57,6 @@ RUN useradd -r -m -g quinoa quinoa
 USER quinoa
 ENV PATH=/usr/lib64/ccache/bin${PATH:+:}${PATH}
 ENV PATH=/usr/lib64/trilinos/bin${PATH:+:}${PATH}
+ENV PATH=/usr/lib64/llvm/4/bin${PATH:+:}${PATH}
 WORKDIR /home/quinoa
 RUN pip install --user codecov coverxygen

@@ -1,7 +1,7 @@
 FROM alpine:latest
 
 # Install system-wide prerequisites
-RUN apk update && apk add libtool autoconf automake gfortran gcc g++ make boost-dev ccache lapack-dev wget bash m4 file git cmake perl grep zlib-dev libexecinfo-dev
+RUN apk update && apk add libtool autoconf automake gfortran gcc g++ make boost-dev ccache lapack-dev wget bash m4 file git cmake perl grep zlib-dev libexecinfo-dev doxygen
 
 # Install OpenMPI
 ADD https://www.open-mpi.org/software/ompi/v2.0/downloads/openmpi-2.0.2.tar.gz /openmpi/

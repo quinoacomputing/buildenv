@@ -1,5 +1,7 @@
 FROM alpine:latest
 
+ARG COMMIT
+
 # Install system-wide prerequisites
 RUN apk update && apk add libtool autoconf automake gfortran gcc g++ make boost-dev ccache lapack-dev openjdk8 wget bash m4 file git cmake perl grep zlib-dev libexecinfo-dev doxygen
 
@@ -37,6 +39,6 @@ WORKDIR /home/quinoa
 # Clone quinoa
 RUN git clone --recursive https://github.com/quinoacomputing/quinoa.git
 # Build TPLs
-RUN cd quinoa && mkdir -p tpl/build && cd tpl/build && cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_BUILD_TYPE=Release -DCHARM_EXTRA_ARGS="--enable-error-checking" -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl .. && make -sj$(grep -c processor /proc/cpuinfo)
+RUN cd quinoa && git checkout $COMMIT && git submodule update --recursive && git submodule status --recursive && mkdir -p tpl/build && cd tpl/build && cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_BUILD_TYPE=Release -DCHARM_EXTRA_ARGS="--enable-error-checking" -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl .. && make -sj$(grep -c processor /proc/cpuinfo)
 # Remove quinoa
 RUN rm -rf /home/quinoa/quinoa

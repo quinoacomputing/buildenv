@@ -4,7 +4,8 @@ FROM alpine:latest
 ARG COMMIT
 
 # Install system-wide prerequisites
-RUN apk update && apk add libtool autoconf automake gfortran gcc g++ make boost-dev ccache lapack-dev openjdk8 wget bash m4 file git cmake perl grep zlib-dev libexecinfo-dev doxygen
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && cat /etc/apk/repositories
+RUN apk update && apk add libtool autoconf automake gfortran gcc g++ make boost-dev ccache openjdk8 wget bash m4 file git cmake perl grep zlib-dev libexecinfo-dev doxygen ninja graphviz libelf libc++-dev clang clang-dev libdwarf
 
 # Add glibc for sonarqube wrapper
 ADD https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.25-r0/glibc-2.25-r0.apk /
@@ -19,11 +20,13 @@ ENV PATH=${PATH}:/sonarqube/build-wrapper-linux-x86:/sonarqube/sonar-scanner-2.8
 RUN rm -rf sonar-scanner-2.8.zip build-wrapper-linux-x86.zip
 RUN sonar-scanner -h
 
-# Install OpenMPI
+# Install OpenMPI with gnu
 ADD https://www.open-mpi.org/software/ompi/v3.1/downloads/openmpi-3.1.1.tar.gz /openmpi/
-RUN cd /openmpi/ && tar xzf openmpi-3.1.1.tar.gz && cd openmpi-3.1.1 && ./configure --prefix=/opt/openmpi && make -sj$(grep -c processor /proc/cpuinfo) install
-ENV PATH /opt/openmpi/bin:$PATH
-ENV LD_LIBRARY_PATH /opt/openmpi/lib:$LD_LIBRARY_PATH
+RUN cd /openmpi/ && tar xzf openmpi-3.1.1.tar.gz && cd openmpi-3.1.1 && ./configure --enable-shared --enable-static --prefix=/opt/openmpi/gnu && make -sj$(grep -c processor /proc/cpuinfo) install
+RUN rm -rf /openmpi
+# Install OpenMPI with clang
+ADD https://www.open-mpi.org/software/ompi/v3.1/downloads/openmpi-3.1.1.tar.gz /openmpi/
+RUN cd /openmpi/ && tar xzf openmpi-3.1.1.tar.gz && cd openmpi-3.1.1 && ./configure CC=clang CXX=clang++ --enable-shared --enable-static --prefix=/opt/openmpi/clang && make -sj$(grep -c processor /proc/cpuinfo) install
 RUN rm -rf /openmpi
 
 # Create symbolic link to /lib/cpp for the charm++ build, see
@@ -39,13 +42,20 @@ WORKDIR /home/quinoa
 
 # Clone quinoa
 RUN git clone --recursive http://github.com/quinoacomputing/quinoa.git
-# Checkout commit to be tested
+# Checkout specific commit
 RUN cd quinoa && git checkout $COMMIT
 # Update submodules
 RUN cd quinoa && git submodule update --recursive && cd tpl && git checkout all && git submodule init && git submodule update --recursive && cd .. && git submodule status --recursive
 
-# Build TPLs
-RUN cd quinoa && mkdir -p tpl/build && cd tpl/build && cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_BUILD_TYPE=Release -DENABLE_OMEGA_H=true -DCHARM_EXTRA_ARGS="--enable-error-checking" -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl .. && make -sj$(grep -c processor /proc/cpuinfo)
+# Build TPLs with gnu as shared libs
+RUN cd quinoa && mkdir -p tpl/build/gnu && cd tpl/build/gnu && export PATH=/opt/openmpi/gnu/bin:$PATH && cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_BUILD_TYPE=Release -DENABLE_OMEGA_H=true -DCHARM_EXTRA_ARGS="--enable-error-checking" -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl/gnu ../.. && make -sj$(grep -c processor /proc/cpuinfo)
+# Build TPLs with gnu as static libs
+RUN cd quinoa && mkdir -p tpl/build/gnu-static && cd tpl/build/gnu-static && export PATH=/opt/openmpi/gnu/bin:$PATH && cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=off -DCHARM_EXTRA_ARGS="--enable-error-checking" -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl/gnu-static ../.. && make -sj$(grep -c processor /proc/cpuinfo)
+
+# Build TPLs with clang as shared libs
+RUN cd quinoa && mkdir -p tpl/build/clang && cd tpl/build/clang && export PATH=/opt/openmpi/clang/bin:$PATH && cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_BUILD_TYPE=Release -DENABLE_OMEGA_H=true -DCXXFLAGS="-Wno-disabled-macro-expansion -Wno-zero-as-null-pointer-constant" -DCHARM_EXTRA_ARGS="--enable-error-checking;--with-prio-type=int;--enable-randomized-msgq;--suffix;randq-debug" -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl/clang ../.. && make -sj$(grep -c processor /proc/cpuinfo)
+# Build TPLs with clang as static libs
+RUN cd quinoa && mkdir -p tpl/build/clang-static && cd tpl/build/clang-static && export PATH=/opt/openmpi/clang/bin:$PATH && cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=off -DCHARM_EXTRA_ARGS="--enable-error-checking;--with-prio-type=int;--enable-randomized-msgq;--suffix;randq-debug" -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl/clang-static ../.. && make -sj$(grep -c processor /proc/cpuinfo)
 
 # Remove quinoa (keep only TPLs)
 RUN rm -rf /home/quinoa/quinoa

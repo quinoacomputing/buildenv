@@ -1,15 +1,19 @@
 # vim: filetype=dockerfile:
-
 FROM debian:testing
 
 ARG COMMIT
 
 # Install system-wide prerequisites
-RUN apt-get update -y && apt-get install -y m4 autoconf git cmake gfortran gcc g++ gmsh libpugixml-dev libpstreams-dev libboost-all-dev libblas-dev liblapack-dev liblapacke-dev libhypre-dev zlib1g-dev libhdf5-dev libhdf5-openmpi-dev openmpi-bin libopenmpi-dev binutils-dev libx11-dev libxpm-dev libxft-dev libxext-dev clang
+RUN apt-get update -y && apt-get install -y m4 autoconf git cmake gfortran gcc g++ gmsh libpugixml-dev libpstreams-dev libboost-all-dev libblas-dev liblapack-dev liblapacke-dev zlib1g-dev binutils-dev libx11-dev libxpm-dev libxft-dev libxext-dev ninja-build libc++-dev clang
+
+# Install OpenMPI with gnu
+ADD https://www.open-mpi.org/software/ompi/v3.1/downloads/openmpi-3.1.1.tar.gz /openmpi/
+RUN cd /openmpi/ && tar xzf openmpi-3.1.1.tar.gz && cd openmpi-3.1.1 && ./configure CC=gcc CXX=g++ --prefix=/opt/openmpi/gnu && make -sj$(grep -c processor /proc/cpuinfo) install
+RUN rm -rf /openmpi
 
 # Install OpenMPI with clang
 ADD https://www.open-mpi.org/software/ompi/v3.1/downloads/openmpi-3.1.1.tar.gz /openmpi/
-RUN cd /openmpi/ && tar xzf openmpi-3.1.1.tar.gz && cd openmpi-3.1.1 && ./configure CC=clang CXX=clang++ CFLAGS=-fPIC --prefix=/opt/openmpi && make -sj$(grep -c processor /proc/cpuinfo) install
+RUN cd /openmpi/ && tar xzf openmpi-3.1.1.tar.gz && cd openmpi-3.1.1 && ./configure CC=clang CXX=clang++ CFLAGS=-fPIC --prefix=/opt/openmpi/clang && make -sj$(grep -c processor /proc/cpuinfo) install
 RUN rm -rf /openmpi
 
 # Setup user
@@ -25,9 +29,9 @@ RUN cd quinoa && git checkout $COMMIT
 RUN cd quinoa && git submodule update --recursive && cd tpl && git checkout all && git submodule init && git submodule update --recursive && cd .. && git submodule status --recursive
 
 # Build TPLs with gnu
-RUN cd quinoa && mkdir -p tpl/build/gnu && cd tpl/build/gnu && cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl/gnu -DENABLE_ROOT=true -DENABLE_OMEGA_H=true -DCXXFLAGS="-Wno-documentation-unknown-command; -Wno-unknown-pragmas" ../.. && make -sj$(grep -c processor /proc/cpuinfo)
+RUN cd quinoa && mkdir -p tpl/build/gnu && cd tpl/build/gnu && cmake -DCMAKE_CXX_COMPILER=/opt/openmpi/gnu/bin/mpicxx -DCMAKE_C_COMPILER=/opt/openmpi/gnu/bin/mpicc -DCMAKE_Fortran_COMPILER=/opt/openmpi/gnu/bin/mpif90 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl/gnu -DENABLE_ROOT=true -DENABLE_OMEGA_H=true -DCXXFLAGS="-Wno-documentation-unknown-command; -Wno-unknown-pragmas" ../.. && make -sj$(grep -c processor /proc/cpuinfo)
 # Build TPLs with clang
-RUN cd quinoa && mkdir -p tpl/build/clang && cd tpl/build/clang && cmake -DCMAKE_CXX_COMPILER=/opt/openmpi/bin/mpicxx -DCMAKE_C_COMPILER=/opt/openmpi/bin/mpicc -DCMAKE_Fortran_COMPILER=/opt/openmpi/bin/mpif90 -DCHARM_EXTRA_ARGS="--enable-error-checking;--with-prio-type=int;--enable-randomized-msgq;--suffix;randq-debug" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl/clang -DENABLE_ROOT=true -DENABLE_OMEGA_H=true -DCXXFLAGS="-Wno-documentation-unknown-command; -Wno-unknown-pragmas" ../.. && make -sj$(grep -c processor /proc/cpuinfo)
+RUN cd quinoa && mkdir -p tpl/build/clang && cd tpl/build/clang && cmake -DCMAKE_CXX_COMPILER=/opt/openmpi/clang/bin/mpicxx -DCMAKE_C_COMPILER=/opt/openmpi/clang/bin/mpicc -DCMAKE_Fortran_COMPILER=/opt/openmpi/clang/bin/mpif90 -DCHARM_EXTRA_ARGS="--enable-error-checking;--with-prio-type=int;--enable-randomized-msgq;--suffix;randq-debug" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl/clang -DENABLE_ROOT=true -DENABLE_OMEGA_H=true -DCXXFLAGS="-Wno-documentation-unknown-command; -Wno-unknown-pragmas" ../.. && make -sj$(grep -c processor /proc/cpuinfo)
 
 # Remove quinoa (keep only TPLs)
 RUN rm -rf /home/quinoa/quinoa

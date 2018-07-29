@@ -57,5 +57,8 @@ RUN cd quinoa && mkdir -p tpl/build/clang && cd tpl/build/clang && export PATH=/
 # Build TPLs with clang as static libs
 RUN cd quinoa && mkdir -p tpl/build/clang-static && cd tpl/build/clang-static && export PATH=/opt/openmpi/clang/bin:$PATH && cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=off -DCHARM_EXTRA_ARGS="--enable-error-checking;--with-prio-type=int;--enable-randomized-msgq;--suffix;randq-debug" -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl/clang-static ../.. && make -sj$(grep -c processor /proc/cpuinfo)
 
+# Add ccache to PATH
+ENV PATH=/usr/lib/ccache/bin:${PATH}
+
 # Remove quinoa (keep only TPLs)
 RUN rm -rf /home/quinoa/quinoa

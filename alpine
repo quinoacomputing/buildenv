@@ -1,11 +1,9 @@
 # vim: filetype=dockerfile:
-FROM alpine:latest
-
-ARG COMMIT
+FROM alpine:edge
 
 # Install system-wide prerequisites
 RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && cat /etc/apk/repositories
-RUN apk update && apk add libtool autoconf automake gfortran gcc g++ make boost-dev ccache openjdk8 wget bash m4 file git cmake perl grep zlib-dev libexecinfo-dev doxygen ninja graphviz libc++-dev clang clang-dev libdwarf-dev libelf-dev binutils-dev
+RUN apk update && apk add libtool autoconf automake gfortran gcc g++ make boost-dev ccache openjdk8 wget bash m4 file git cmake perl grep zlib-dev libexecinfo-dev doxygen ninja graphviz libc++-dev clang clang-dev libdwarf-dev libelf-dev binutils-dev patch
 
 # Add glibc for sonarqube wrapper
 ADD https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.25-r0/glibc-2.25-r0.apk /
@@ -41,11 +39,13 @@ USER quinoa
 WORKDIR /home/quinoa
 
 # Clone quinoa
-RUN git clone --recursive http://github.com/quinoacomputing/quinoa.git
+RUN git clone --recurse-submodules http://github.com/quinoacomputing/quinoa.git
+# Pull in docker build arg: COMMIT
+ARG COMMIT
 # Checkout specific commit
 RUN cd quinoa && git checkout $COMMIT
 # Update submodules
-RUN cd quinoa && git submodule update --recursive && cd tpl && git checkout all && git submodule init && git submodule update --recursive && cd .. && git submodule status --recursive
+RUN cd quinoa && git submodule update --recursive && cd tpl && git submodule init && git submodule update --recursive && cd .. && git submodule status --recursive
 
 # Build TPLs with gnu as shared libs
 RUN cd quinoa && mkdir -p tpl/build/gnu && cd tpl/build/gnu && export PATH=/opt/openmpi/gnu/bin:$PATH && cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_BUILD_TYPE=Release -DENABLE_OMEGA_H=true -DCHARM_EXTRA_ARGS="--enable-error-checking" -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl/gnu ../.. && make -sj$(grep -c processor /proc/cpuinfo)
@@ -57,8 +57,10 @@ RUN cd quinoa && mkdir -p tpl/build/clang && cd tpl/build/clang && export PATH=/
 # Build TPLs with clang as static libs
 RUN cd quinoa && mkdir -p tpl/build/clang-static && cd tpl/build/clang-static && export PATH=/opt/openmpi/clang/bin:$PATH && cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=off -DCHARM_EXTRA_ARGS="--enable-error-checking;--with-prio-type=int;--enable-randomized-msgq;--suffix;randq-debug" -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl/clang-static ../.. && make -sj$(grep -c processor /proc/cpuinfo)
 
-# Add ccache to PATH
-ENV PATH=/usr/lib/ccache/bin:${PATH}
-
 # Remove quinoa (keep only TPLs)
 RUN rm -rf /home/quinoa/quinoa
+
+# Add clang ccache links
+USER root
+RUN ln -s /usr/bin/ccache /usr/lib/ccache/bin/clang && ln -s /usr/bin/ccache /usr/lib/ccache/bin/clang++
+USER quinoa

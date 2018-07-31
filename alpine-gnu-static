@@ -1,0 +1,37 @@
+# vim: filetype=dockerfile:
+FROM alpine:edge
+
+# Install system-wide prerequisites
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && cat /etc/apk/repositories
+RUN apk update && apk add libtool autoconf automake gfortran gcc g++ make boost-dev ccache wget bash m4 file git cmake perl grep zlib-dev libexecinfo-dev ninja libdwarf-dev libelf-dev binutils-dev patch
+
+# Install OpenMPI with gnu
+ADD http://download.open-mpi.org/release/open-mpi/v3.1/openmpi-3.1.1.tar.gz /openmpi/
+RUN cd /openmpi/ && tar xzf openmpi-3.1.1.tar.gz && cd openmpi-3.1.1 && ./configure --enable-shared --enable-static --prefix=/opt/openmpi/gnu && make -sj$(grep -c processor /proc/cpuinfo) install
+RUN rm -rf /openmpi
+
+# Create symbolic link to /lib/cpp for the charm++ build, see
+# https://lists.cs.illinois.edu/lists/arc/charm/2016-05/msg00013.html
+RUN ln -s /usr/bin/cpp /lib/cpp
+
+# Configure user
+RUN addgroup quinoa
+RUN adduser -S quinoa quinoa
+RUN chown -R quinoa:quinoa /home/quinoa
+USER quinoa
+WORKDIR /home/quinoa
+
+# Clone quinoa
+RUN git clone --recurse-submodules http://github.com/quinoacomputing/quinoa.git
+# Pull in docker build arg: COMMIT
+ARG COMMIT
+# Checkout specific commit
+RUN cd quinoa && git checkout $COMMIT
+# Update submodules
+RUN cd quinoa && git submodule update --recursive && cd tpl && git submodule init && git submodule update --recursive && cd .. && git submodule status --recursive
+
+# Build TPLs with gnu as static libs
+RUN cd quinoa && mkdir -p tpl/build/gnu-static && cd tpl/build/gnu-static && export PATH=/opt/openmpi/gnu/bin:$PATH && cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=off -DCHARM_EXTRA_ARGS="--enable-error-checking" -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl/gnu-static ../.. && make -sj$(grep -c processor /proc/cpuinfo)
+
+# Remove quinoa (keep only TPLs)
+RUN rm -rf /home/quinoa/quinoa

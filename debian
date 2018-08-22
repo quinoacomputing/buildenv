@@ -12,8 +12,9 @@ WORKDIR /home/quinoa
 
 # Get doxygen 1.8.15
 RUN git clone http://github.com/doxygen/doxygen.git
-RUN cd doxygen && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/home/quinoa/tools .. && make -sj$(grep -c processor /proc/cpuinfo) install
+RUN cd doxygen && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl/gnu .. && make -sj$(grep -c processor /proc/cpuinfo) install
 RUN rm -rf doxygen
+ENV PATH=/home/quinoa/tools/bin:$PATH
 
 # Get m.css
 RUN git clone http://github.com/mosra/m.css.git /home/quinoa/tools/m.css

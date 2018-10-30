@@ -18,17 +18,15 @@ RUN rm -rf doxygen
 # Get m.css
 RUN git clone http://github.com/mosra/m.css.git /home/quinoa/tpl/m.css
 
-# Test doc build
-
-#ARG COMMIT
+# Test doc build: To debug change above, keep commented
 
 # Clone quinoa
 #RUN git clone http://github.com/quinoacomputing/quinoa.git
-# Checkout $COMMIT
-#RUN cd quinoa && git checkout $COMMIT
-
+# Pull in docker build arg: BRANCH
+#ARG BRANCH
+# Checkout specific branch
+#RUN cd quinoa && git checkout -b $BRANCH remotes/origin/$BRANCH && git log -1 HEAD
 # Build doc
 #RUN cd quinoa && mkdir build && cd build && export PATH=/home/quinoa/tools/bin:$PATH && cmake -DTPL_DIR=/home/quinoa/tools ../src && make doc
-
 # Remove quinoa (keep stuff required to build doc)
 #RUN rm -rf /home/quinoa/quinoa

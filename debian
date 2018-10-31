@@ -22,10 +22,10 @@ RUN git clone http://github.com/mosra/m.css.git /home/quinoa/tpl/m.css
 
 # Clone quinoa
 #RUN git clone http://github.com/quinoacomputing/quinoa.git
-# Pull in docker build arg: BRANCH
-#ARG BRANCH
+# Pull in docker build arg: COMMIT
+#ARG COMMIT
 # Checkout specific branch
-#RUN cd quinoa && git checkout -b $BRANCH remotes/origin/$BRANCH && git log -1 HEAD
+#RUN cd quinoa && git checkout $COMMIT && git log -1 HEAD
 # Build doc
 #RUN cd quinoa && mkdir build && cd build && export PATH=/home/quinoa/tools/bin:$PATH && cmake -DTPL_DIR=/home/quinoa/tools ../src && make doc
 # Remove quinoa (keep stuff required to build doc)

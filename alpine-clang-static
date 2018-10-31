@@ -23,10 +23,10 @@ WORKDIR /home/quinoa
 
 # Clone quinoa
 RUN git clone --recurse-submodules http://github.com/quinoacomputing/quinoa.git
-# Pull in docker build arg: BRANCH
-ARG BRANCH
+# Pull in docker build arg: COMMIT
+ARG COMMIT
 # Checkout specific commit
-RUN cd quinoa && git checkout -b $BRANCH remotes/origin/$BRANCH && git log -1 HEAD
+RUN cd quinoa && git checkout $COMMIT && git log -1 HEAD
 # Update submodules
 RUN cd quinoa && git submodule update --recursive && cd tpl && git submodule init && git submodule update --recursive && cd .. && git submodule status --recursive
 

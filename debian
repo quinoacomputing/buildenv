@@ -24,7 +24,7 @@ RUN git clone http://github.com/mosra/m.css.git /home/quinoa/tpl/m.css
 #RUN git clone http://github.com/quinoacomputing/quinoa.git
 # Pull in docker build arg: COMMIT
 #ARG COMMIT
-# Checkout specific branch
+# Checkout specific commit
 #RUN cd quinoa && git checkout $COMMIT && git log -1 HEAD
 # Build doc
 #RUN cd quinoa && mkdir build && cd build && export PATH=/home/quinoa/tools/bin:$PATH && cmake -DTPL_DIR=/home/quinoa/tools ../src && make doc

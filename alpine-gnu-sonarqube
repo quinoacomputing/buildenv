@@ -3,19 +3,19 @@ FROM alpine:edge
 
 # Install system-wide prerequisites
 RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && cat /etc/apk/repositories
-RUN apk update && apk add libtool autoconf automake gfortran gcc g++ make boost-dev ccache openjdk8 wget bash m4 file git cmake perl grep zlib-dev libexecinfo-dev doxygen ninja graphviz libdwarf-dev libelf-dev binutils-dev patch
+RUN apk update && apk add libtool autoconf automake gfortran gcc g++ make boost-dev ccache openjdk8 wget bash m4 file git cmake perl grep zlib-dev libexecinfo-dev doxygen ninja graphviz libdwarf-dev libelf-dev binutils-dev patch unzip
 
 # Add glibc for sonarqube wrapper
 ADD https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.25-r0/glibc-2.25-r0.apk /
-RUN wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://raw.githubusercontent.com/sgerrand/alpine-pkg-glibc/master/sgerrand.rsa.pub
+RUN wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub
 RUN apk add glibc-2.25-r0.apk
 
 # Install sonarqube scanner and wrapper
-ADD https://sonarsource.bintray.com/Distribution/sonar-scanner-cli/sonar-scanner-2.8.zip /
+ADD https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.2.0.1227-linux.zip /
 ADD https://sonarqube.com/static/cpp/build-wrapper-linux-x86.zip /
-RUN mkdir /sonarqube && unzip /sonar-scanner-2.8.zip -d /sonarqube && unzip /build-wrapper-linux-x86.zip -d /sonarqube
-ENV PATH=${PATH}:/sonarqube/build-wrapper-linux-x86:/sonarqube/sonar-scanner-2.8/bin
-RUN rm -rf sonar-scanner-2.8.zip build-wrapper-linux-x86.zip
+RUN mkdir /sonarqube && unzip /sonar-scanner-cli-3.2.0.1227-linux.zip -d /sonarqube && unzip /build-wrapper-linux-x86.zip -d /sonarqube
+ENV PATH=${PATH}:/sonarqube/build-wrapper-linux-x86:/sonarqube/sonar-scanner-3.2.0.1227-linux/bin
+RUN rm -rf sonar-scanner-cli-3.2.0.1227-linux.zip build-wrapper-linux-x86.zip
 RUN sonar-scanner -h
 
 # Install OpenMPI with gnu

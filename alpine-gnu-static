@@ -3,12 +3,14 @@ FROM alpine:edge
 
 # Install system-wide prerequisites
 RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && cat /etc/apk/repositories
-RUN apk update && apk add libtool autoconf automake gfortran gcc g++ make boost-dev ccache wget bash m4 file git cmake perl grep zlib-dev libexecinfo-dev ninja libdwarf-dev libelf-dev binutils-dev patch
+RUN apk update && apk add libtool autoconf automake gfortran gcc g++ make boost-dev ccache wget bash m4 file git cmake perl grep zlib-dev libexecinfo-dev ninja libdwarf-dev libelf-dev binutils-dev patch bzip2-dev xz-dev
 
 # Install OpenMPI with gnu
 ADD http://download.open-mpi.org/release/open-mpi/v3.1/openmpi-3.1.1.tar.gz /openmpi/
 RUN cd /openmpi/ && tar xzf openmpi-3.1.1.tar.gz && cd openmpi-3.1.1 && ./configure --enable-shared --enable-static --prefix=/opt/openmpi/gnu && make -sj$(grep -c processor /proc/cpuinfo) install
 RUN rm -rf /openmpi
+ENV PATH /opt/openmpi/gnu/bin:$PATH
+ENV OMPI_MCA_plm isolated
 
 # Create symbolic link to /lib/cpp for the charm++ build, see
 # https://lists.cs.illinois.edu/lists/arc/charm/2016-05/msg00013.html
@@ -31,7 +33,11 @@ RUN cd quinoa && git checkout $COMMIT && git log -1 HEAD
 RUN cd quinoa && git submodule update --recursive && cd tpl && git submodule init && git submodule update --recursive && cd .. && git submodule status --recursive
 
 # Build TPLs with gnu as static libs
-RUN cd quinoa && mkdir -p tpl/build/gnu-static && cd tpl/build/gnu-static && export PATH=/opt/openmpi/gnu/bin:$PATH && cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_BUILD_TYPE=Release -DENABLE_DOXYGEN=false -DENABLE_MCSS=false -DBUILD_SHARED_LIBS=off -DCHARM_EXTRA_ARGS="--enable-error-checking" -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl/gnu-static ../.. && make -sj$(grep -c processor /proc/cpuinfo)
+RUN cd quinoa && mkdir -p tpl/build/gnu-static && cd tpl/build/gnu-static && cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_BUILD_TYPE=Release -DENABLE_DOXYGEN=false -DENABLE_MCSS=false -DBUILD_SHARED_LIBS=off -DCHARM_EXTRA_ARGS="--enable-error-checking" -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl/gnu-static ../.. && make -sj$(grep -c processor /proc/cpuinfo)
+
+# Build code, run tests (comment this when verified, before docker push)
+#RUN mkdir -p quinoa/build && cd quinoa/build && cmake -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DTPL_DIR=/home/quinoa/tpl/gnu-static -DBUILD_SHARED_LIBS=off -DRUNNER_ARGS="--bind-to none -oversubscribe" -GNinja  ../src && ninja && ../script/run_tests.sh $(grep -c processor /proc/cpuinfo) mpirun -n
+# Build doc ('ninja doc').
 
 # Remove quinoa (keep only TPLs)
 RUN rm -rf /home/quinoa/quinoa

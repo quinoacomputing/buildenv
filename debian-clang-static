@@ -30,10 +30,10 @@ RUN cd quinoa && git checkout $COMMIT && git log -1 HEAD
 RUN cd quinoa && git submodule update --recursive && cd tpl && git submodule init && git submodule update --recursive && cd .. && git submodule status --recursive
 
 # Build TPLs
-RUN mkdir -p quinoa/tpl/build && cd quinoa/tpl/build && cmake -DENABLE_OMEGA_H=true -DENABLE_DOXYGEN=false -DENABLE_MCSS=false -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl/clang -DCHARM_EXTRA_ARGS="--enable-error-checking;--with-prio-type=int;--enable-randomized-msgq;--suffix;randq-debug" -DBUILD_SHARED_LIBS=off -DCXXFLAGS=-w .. && make -sj$(grep -c processor /proc/cpuinfo)
+RUN mkdir -p quinoa/tpl/build && cd quinoa/tpl/build && cmake -DENABLE_OMEGA_H=true -DENABLE_DOXYGEN=false -DENABLE_MCSS=false -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl/clang-static -DCHARM_EXTRA_ARGS="--enable-error-checking;--with-prio-type=int;--enable-randomized-msgq;--suffix;randq-debug" -DBUILD_SHARED_LIBS=off -DCXXFLAGS=-w .. && make -sj$(grep -c processor /proc/cpuinfo)
 
 # Build code, run tests (comment this when verified, before docker push)
-#RUN mkdir -p quinoa/build && cd quinoa/build && cmake -DCMAKE_CXX_FLAGS="-Werror -ftemplate-depth=1024" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DTPL_DIR=/home/quinoa/tpl/clang -DBUILD_SHARED_LIBS=off -GNinja -DRUNNER=mpirun -DRUNNER_NCPUS_ARG=-n ../src && ninja && ../script/run_tests.sh $(grep -c processor /proc/cpuinfo) mpirun -n
+#RUN mkdir -p quinoa/build && cd quinoa/build && cmake -DCMAKE_CXX_FLAGS="-Werror -ftemplate-depth=1024" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DTPL_DIR=/home/quinoa/tpl/clang-static -DBUILD_SHARED_LIBS=off -GNinja -DRUNNER=mpirun -DRUNNER_NCPUS_ARG=-n ../src && ninja && ../script/run_tests.sh $(grep -c processor /proc/cpuinfo) mpirun -n
 
 # Clean, keep TPLs
 RUN rm -rf quinoa

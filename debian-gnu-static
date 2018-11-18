@@ -6,10 +6,10 @@ RUN apt-get update -y && apt-get install -y git cmake gcc gfortran g++ ninja-bui
 
 # Install OpenMPI with gnu (for static builds)
 ADD http://download.open-mpi.org/release/open-mpi/v3.1/openmpi-3.1.1.tar.gz /openmpi/
-RUN cd /openmpi/ && tar xzf openmpi-3.1.1.tar.gz && cd openmpi-3.1.1 && ./configure --enable-shared --enable-static --prefix=/opt/openmpi && make -sj$(grep -c processor /proc/cpuinfo) install
+RUN cd /openmpi/ && tar xzf openmpi-3.1.1.tar.gz && cd openmpi-3.1.1 && ./configure --enable-shared --enable-static --prefix=/opt/openmpi/gnu && make -sj$(grep -c processor /proc/cpuinfo) install
 RUN rm -rf /openmpi
-ENV PATH /opt/openmpi/bin:$PATH
-ENV LD_LIBRARY_PATH /opt/openmpi/lib:$LD_LIBRARY_PATH
+ENV PATH /opt/openmpi/gnu/bin:$PATH
+ENV LD_LIBRARY_PATH /opt/openmpi/gnu/lib:$LD_LIBRARY_PATH
 
 # Install gmsh after OpenMPI so OpenMPI does not pick up libibverbs, a dep of gmsh, which can lead to static linking problems
 RUN apt-get install -y gmsh

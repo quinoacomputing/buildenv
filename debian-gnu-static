@@ -5,8 +5,8 @@ FROM debian:stable
 RUN apt-get update -y && apt-get install -y git cmake gcc gfortran g++ ninja-build m4 autoconf libtool libpugixml-dev libpstreams-dev libblas-dev zlib1g-dev binutils-dev libdw-dev libdwarf-dev libgcc-6-dev libgfortran-6-dev vim liblzma-dev libbz2-dev
 
 # Install OpenMPI with gnu (for static builds)
-ADD http://download.open-mpi.org/release/open-mpi/v3.1/openmpi-3.1.1.tar.gz /openmpi/
-RUN cd /openmpi/ && tar xzf openmpi-3.1.1.tar.gz && cd openmpi-3.1.1 && ./configure --enable-shared --enable-static --prefix=/opt/openmpi/gnu && make -sj$(grep -c processor /proc/cpuinfo) install
+ADD https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.0.tar.gz /openmpi/
+RUN cd /openmpi/ && tar xzf openmpi-4.0.0.tar.gz && cd openmpi-4.0.0 && ./configure --enable-shared --enable-static --prefix=/opt/openmpi/gnu && make -sj$(grep -c processor /proc/cpuinfo) install
 RUN rm -rf /openmpi
 ENV PATH /opt/openmpi/gnu/bin:$PATH
 ENV LD_LIBRARY_PATH /opt/openmpi/gnu/lib:$LD_LIBRARY_PATH

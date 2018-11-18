@@ -2,7 +2,7 @@
 FROM debian:stable
 
 # Install system-wide prerequisites
-RUN apt-get update -y && apt-get install -y git cmake g++ clang ninja-build m4 autoconf libpugixml-dev libpstreams-dev libboost-all-dev libblas-dev liblapack-dev liblapacke-dev libhypre-dev zlib1g-dev binutils-dev libx11-dev libxpm-dev libxft-dev libxext-dev libdw-dev libdwarf-dev vim gmsh
+RUN apt-get update -y && apt-get install -y git cmake g++ clang ninja-build m4 autoconf libpugixml-dev libpstreams-dev libboost-all-dev libblas-dev liblapack-dev liblapacke-dev zlib1g-dev binutils-dev libx11-dev libxpm-dev libxft-dev libxext-dev libdw-dev libdwarf-dev vim gmsh
 RUN echo 'deb http://ftp.us.debian.org/debian unstable main' >> /etc/apt/sources.list && apt-get update -y && apt-get install -y gfortran-5
 
 # Install OpenMPI with gnu (for static builds)

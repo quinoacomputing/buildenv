@@ -6,8 +6,8 @@ RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/reposit
 RUN apk update && apk add libtool autoconf automake gfortran gcc g++ make boost-dev ccache wget bash m4 file git cmake perl grep zlib-dev libexecinfo-dev ninja clang clang-dev libdwarf-dev libelf-dev binutils-dev patch
 
 # Install OpenMPI with clang
-ADD http://download.open-mpi.org/release/open-mpi/v2.1/openmpi-2.1.5.tar.gz /openmpi/
-RUN cd /openmpi/ && tar xzf openmpi-2.1.5.tar.gz && cd openmpi-2.1.5 && ./configure CC=clang CXX=clang++ --enable-shared --enable-static --prefix=/opt/openmpi/clang && make -sj$(grep -c processor /proc/cpuinfo) install
+ADD http://download.open-mpi.org/release/open-mpi/v3.0/openmpi-3.0.3.tar.gz /openmpi/
+RUN cd /openmpi/ && tar xzf openmpi-3.0.3.tar.gz && cd openmpi-3.0.3 && ./configure CC=clang CXX=clang++ --enable-shared --enable-static --prefix=/opt/openmpi/clang && make -sj$(grep -c processor /proc/cpuinfo) install
 RUN rm -rf /openmpi
 
 # Create symbolic link to /lib/cpp for the charm++ build, see

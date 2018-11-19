@@ -10,13 +10,6 @@ RUN adduser --gecos "" --disabled-password quinoa
 USER quinoa
 WORKDIR /home/quinoa
 
-
-
-
-
-
-
-
 # Get doxygen 1.8.15
 RUN git clone http://github.com/doxygen/doxygen.git
 RUN cd doxygen && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl .. && make -sj$(grep -c processor /proc/cpuinfo) install

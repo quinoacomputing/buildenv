@@ -1,0 +1,31 @@
+From c8d55350a965f1b27308a5efaeef80b82c01ffb7 Mon Sep 17 00:00:00 2001
+From: Gilles Gouaillardet <gilles@rist.or.jp>
+Date: Mon, 4 Jul 2016 12:58:48 +0900
+Subject: [PATCH] add missing include files
+
+pmix cannot be built on alpine linux because of some missing includes.
+uid_t and gid_t are defined in unistd.h or sys/types.h, and unistd.h
+is not indirectly pulled under alpine linux, so do it manually.
+
+Thanks N.L.K Nguyen for the report
+---
+ include/pmix/pmix_common.h | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/include/pmix/pmix_common.h b/include/pmix/pmix_common.h
+index 23c0a2c11d..7f5fe52116 100644
+--- a/include/pmix/pmix_common.h
++++ b/include/pmix/pmix_common.h
+@@ -57,6 +59,12 @@
+ #ifdef HAVE_SYS_TIME_H
+ #include <sys/time.h> /* for struct timeval */
+ #endif
++#ifdef HAVE_UNISTD_H
++#include <unistd.h> /* for uid_t and gid_t */
++#endif
++#ifdef HAVE_SYS_TYPES_H
++#include <sys/types.h> /* for uid_t and gid_t */
++#endif
+ 
+ BEGIN_C_DECLS
+ 

@@ -1,0 +1,35 @@
+# vim: filetype=dockerfile:
+FROM debian:stable
+
+# Install system-wide prerequisites
+RUN apt-get update -y && apt-get install -y git cmake g++ clang ninja-build m4 autoconf libtool libpugixml-dev libpstreams-dev libblas-dev liblapack-dev liblapacke-dev zlib1g-dev binutils-dev python-dev libx11-dev libxpm-dev libxft-dev libxext-dev libdw-dev libdwarf-dev vim
+
+# Install OpenMPI with gnu (for static builds)
+ADD http://download.open-mpi.org/release/open-mpi/v3.1/openmpi-3.1.1.tar.gz /openmpi/
+RUN cd /openmpi/ && tar xzf openmpi-3.1.1.tar.gz && cd openmpi-3.1.1 && ./configure --enable-shared --enable-static CC=clang CXX=clang++ FC=gfortran CFLAGS=-fPIC --prefix=/opt/openmpi/clang && make -sj$(grep -c processor /proc/cpuinfo) install
+RUN rm -rf /openmpi
+ENV PATH /opt/openmpi/clang/bin:$PATH
+ENV LD_LIBRARY_PATH /opt/openmpi/clang/lib:$LD_LIBRARY_PATH
+
+# User configuration
+RUN adduser --gecos "" --disabled-password quinoa
+USER quinoa
+WORKDIR /home/quinoa
+CMD ["/bin/bash"]
+
+# Clone quinoa
+RUN git clone --recurse-submodules http://github.com/quinoacomputing/quinoa.git
+# Checkout commit to be tested
+ARG COMMIT
+RUN cd quinoa && git checkout $COMMIT && git log -1 HEAD
+# Update submodules
+RUN cd quinoa && git submodule update --recursive && cd tpl && git submodule init && git submodule update --recursive && cd .. && git submodule status --recursive
+
+# Build TPLs
+RUN mkdir -p quinoa/tpl/build && cd quinoa/tpl/build && cmake -DENABLE_OMEGA_H=true -DENABLE_ROOT=true -DENABLE_DOXYGEN=false -DENABLE_MCSS=false -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl/clang-smp -DCHARM_EXTRA_ARGS="--enable-error-checking;smp" -DCXXFLAGS=-w .. && make -sj$(grep -c processor /proc/cpuinfo)
+
+# Build code, run tests (comment this when verified, before docker push)
+#RUN mkdir -p quinoa/build && cd quinoa/build && cmake -DCMAKE_CXX_FLAGS="-Werror -ftemplate-depth=1024" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DTPL_DIR=/home/quinoa/tpl/clang-smp -GNinja -DRUNNER=mpirun -DRUNNER_NCPUS_ARG=-n -DRUNNER_ARGS="--bind-to none -oversubscribe" ../src && ninja && npes=$(($(grep -c processor /proc/cpuinfo)-2)) && ppn=$(($npes/2)) && ../script/run_tests.sh 2 mpirun -n "--bind-to none -oversubscribe" "+ppn $ppn"
+
+# Clean, keep TPLs
+RUN rm -rf quinoa

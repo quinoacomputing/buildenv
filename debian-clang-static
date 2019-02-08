@@ -2,12 +2,11 @@
 FROM debian:stable
 
 # Install system-wide prerequisites
-RUN apt-get update -y && apt-get install -y git cmake g++ clang ninja-build m4 autoconf libtool libpugixml-dev libpstreams-dev libblas-dev liblzma-dev libbz2-dev zlib1g-dev binutils-dev libdw-dev libdwarf-dev vim
-RUN echo 'deb http://ftp.us.debian.org/debian unstable main' >> /etc/apt/sources.list && apt-get update -y && apt-get install -y libgcc-dev liblapack-dev liblapacke-dev
+RUN apt-get update -y && apt-get install -y git cmake g++ clang ninja-build m4 autoconf libtool libpugixml-dev libpstreams-dev libblas-dev liblzma-dev libbz2-dev zlib1g-dev binutils-dev libdw-dev libdwarf-dev vim liblapack-dev liblapacke-dev
 
 # Install OpenMPI with gnu (for static builds)
-ADD http://download.open-mpi.org/release/open-mpi/v3.0/openmpi-3.0.0.tar.gz /openmpi/
-RUN cd /openmpi/ && tar xzf openmpi-3.0.0.tar.gz && cd openmpi-3.0.0 && ./configure --enable-shared --enable-static CC=clang CXX=clang++ FC=gfortran CFLAGS=-fPIC --prefix=/opt/openmpi/clang && make -sj$(grep -c processor /proc/cpuinfo) install
+ADD http://download.open-mpi.org/release/open-mpi/v2.1/openmpi-2.1.5.tar.gz /openmpi/
+RUN cd /openmpi/ && tar xzf openmpi-2.1.5.tar.gz && cd openmpi-2.1.5 && ./configure --enable-shared --enable-static CC=clang CXX=clang++ FC=gfortran CFLAGS=-fPIC --prefix=/opt/openmpi/clang && make -sj$(grep -c processor /proc/cpuinfo) install
 RUN rm -rf /openmpi
 ENV PATH /opt/openmpi/clang/bin:$PATH
 ENV LD_LIBRARY_PATH /opt/openmpi/clang/lib:$LD_LIBRARY_PATH

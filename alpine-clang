@@ -36,7 +36,7 @@ ARG COMMIT
 # Checkout specific commit
 RUN cd quinoa && git checkout $COMMIT && git log -1 HEAD
 # Update submodules
-RUN cd quinoa && git submodule update --recursive && cd external && git submodule init && git submodule update --recursive && cd .. && git submodule status --recursive
+RUN cd quinoa && git submodule init && git submodule update --recursive && cd external && git submodule init && git submodule update --recursive && cd .. && git submodule status --recursive
 
 # Build TPLs with clang as shared libs
 RUN cd quinoa && mkdir -p external/build/clang && cd external/build/clang && export PATH=/opt/openmpi/clang/bin:$PATH && cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_BUILD_TYPE=Release -DENABLE_OMEGA_H=true -DENABLE_DOXYGEN=false -DENABLE_MCSS=false -DCXXFLAGS="-Wno-disabled-macro-expansion -Wno-zero-as-null-pointer-constant" -DCHARM_EXTRA_ARGS="--enable-error-checking;--with-prio-type=int;--enable-randomized-msgq;--suffix;randq-debug" -DCMAKE_INSTALL_PREFIX=/home/quinoa/external/clang ../.. && make -sj$(grep -c processor /proc/cpuinfo)

@@ -36,7 +36,7 @@ ARG COMMIT
 # Checkout specific commit
 RUN cd quinoa && git checkout $COMMIT && git log -1 HEAD
 # Update submodules
-RUN cd quinoa && git submodule update --recursive && cd external && git submodule init && git submodule update --recursive && cd .. && git submodule status --recursive
+RUN cd quinoa && git submodule init && git submodule update --recursive && cd external && git submodule init && git submodule update --recursive && cd .. && git submodule status --recursive
 
 # Build TPLs with gnu as static libs
 RUN cd quinoa && mkdir -p external/build/gnu-static && cd external/build/gnu-static && cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_BUILD_TYPE=Release -DENABLE_DOXYGEN=false -DENABLE_MCSS=false -DBUILD_SHARED_LIBS=off -DCHARM_EXTRA_ARGS="--enable-error-checking" -DCMAKE_INSTALL_PREFIX=/home/quinoa/external/gnu-static ../.. && make -sj$(grep -c processor /proc/cpuinfo)

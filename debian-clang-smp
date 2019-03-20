@@ -23,7 +23,7 @@ RUN git clone --recurse-submodules http://github.com/quinoacomputing/quinoa.git
 ARG COMMIT
 RUN cd quinoa && git checkout $COMMIT && git log -1 HEAD
 # Update submodules
-RUN cd quinoa && git submodule update --recursive && cd external && git submodule init && git submodule update --recursive && cd .. && git submodule status --recursive
+RUN cd quinoa && git submodule init && git submodule update --recursive && cd external && git submodule init && git submodule update --recursive && cd .. && git submodule status --recursive
 
 # Build TPLs
 RUN mkdir -p quinoa/external/build && cd quinoa/external/build && cmake -DENABLE_OMEGA_H=true -DENABLE_ROOT=true -DENABLE_DOXYGEN=false -DENABLE_MCSS=false -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_INSTALL_PREFIX=/home/quinoa/external/clang-smp -DCHARM_EXTRA_ARGS="--enable-error-checking;smp" -DCXXFLAGS=-w .. && make -sj$(grep -c processor /proc/cpuinfo)

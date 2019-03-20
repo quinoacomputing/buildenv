@@ -32,13 +32,13 @@ ARG COMMIT
 # Checkout specific commit
 RUN cd quinoa && git checkout $COMMIT && git log -1 HEAD
 # Update submodules
-RUN cd quinoa && git submodule update --recursive && cd tpl && git submodule init && git submodule update --recursive && cd .. && git submodule status --recursive
+RUN cd quinoa && git submodule update --recursive && cd external && git submodule init && git submodule update --recursive && cd .. && git submodule status --recursive
 
 # Build TPLs with clang as shared libs
-RUN cd quinoa && mkdir -p tpl/build/clang && cd tpl/build/clang && export PATH=/opt/openmpi/clang/bin:$PATH && cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_BUILD_TYPE=Release -DENABLE_OMEGA_H=true -DENABLE_DOXYGEN=false -DENABLE_MCSS=false -DCXXFLAGS="-Wno-disabled-macro-expansion -Wno-zero-as-null-pointer-constant" -DCHARM_EXTRA_ARGS="--enable-error-checking;smp" -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl/clang-smp ../.. && make -sj$(grep -c processor /proc/cpuinfo)
+RUN cd quinoa && mkdir -p external/build/clang && cd external/build/clang && export PATH=/opt/openmpi/clang/bin:$PATH && cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_C_COMPILER=mpicc -DCMAKE_Fortran_COMPILER=mpif90 -DCMAKE_BUILD_TYPE=Release -DENABLE_OMEGA_H=true -DENABLE_DOXYGEN=false -DENABLE_MCSS=false -DCXXFLAGS="-Wno-disabled-macro-expansion -Wno-zero-as-null-pointer-constant" -DCHARM_EXTRA_ARGS="--enable-error-checking;smp" -DCMAKE_INSTALL_PREFIX=/home/quinoa/external/clang-smp ../.. && make -sj$(grep -c processor /proc/cpuinfo)
 
 # Build code, run tests (comment this when verified, before docker push)
-#RUN mkdir -p quinoa/build && cd quinoa/build && cmake -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_BUILD_TYPE=Release -DTPL_DIR=/home/quinoa/tpl/clang-smp -GNinja -DRUNNER=mpirun -DRUNNER_NCPUS_ARG=-n -DRUNNER_ARGS="--bind-to none -oversubscribe" ../src && ninja && npes=$(($(grep -c processor /proc/cpuinfo)-2)) && ppn=$(($npes/2)) && ../script/run_tests.sh 2 mpirun -n "--bind-to none -oversubscribe" "+ppn $ppn"
+#RUN mkdir -p quinoa/build && cd quinoa/build && cmake -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_BUILD_TYPE=Release -DTPL_DIR=/home/quinoa/external/clang-smp -GNinja -DRUNNER=mpirun -DRUNNER_NCPUS_ARG=-n -DRUNNER_ARGS="--bind-to none -oversubscribe" ../src && ninja && npes=$(($(grep -c processor /proc/cpuinfo)-2)) && ppn=$(($npes/2)) && ../script/run_tests.sh 2 mpirun -n "--bind-to none -oversubscribe" "+ppn $ppn"
 
 # Remove quinoa (keep only TPLs)
 RUN rm -rf /home/quinoa/quinoa

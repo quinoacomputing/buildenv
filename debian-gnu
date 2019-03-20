@@ -16,12 +16,12 @@ RUN git clone --recurse-submodules http://github.com/quinoacomputing/quinoa.git
 ARG COMMIT
 RUN cd quinoa && git checkout $COMMIT && git log -1 HEAD
 # Update submodules
-RUN cd quinoa && git submodule update --recursive && cd tpl && git submodule init && git submodule update --recursive && cd .. && git submodule status --recursive
+RUN cd quinoa && git submodule update --recursive && cd external && git submodule init && git submodule update --recursive && cd .. && git submodule status --recursive
 # Build TPLs
-RUN mkdir -p quinoa/tpl/build && cd quinoa/tpl/build && cmake -DENABLE_ROOT=true -DENABLE_OMEGA_H=true -DENABLE_DOXYGEN=false -DENABLE_MCSS=false -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/home/quinoa/tpl/gnu .. && make -sj$(grep -c processor /proc/cpuinfo)
+RUN mkdir -p quinoa/external/build && cd quinoa/external/build && cmake -DENABLE_ROOT=true -DENABLE_OMEGA_H=true -DENABLE_DOXYGEN=false -DENABLE_MCSS=false -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/home/quinoa/external/gnu .. && make -sj$(grep -c processor /proc/cpuinfo)
 
 # Build code, run tests (comment this when verified, before docker push)
-#RUN mkdir -p quinoa/build && cd quinoa/build && cmake -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_BUILD_TYPE=Release -DTPL_DIR=/home/quinoa/tpl/gnu -GNinja -DRUNNER=mpirun -DRUNNER_NCPUS_ARG=-n ../src && ninja && ../script/run_tests.sh $(grep -c processor /proc/cpuinfo) mpirun -n
+#RUN mkdir -p quinoa/build && cd quinoa/build && cmake -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_BUILD_TYPE=Release -DTPL_DIR=/home/quinoa/external/gnu -GNinja -DRUNNER=mpirun -DRUNNER_NCPUS_ARG=-n ../src && ninja && ../script/run_tests.sh $(grep -c processor /proc/cpuinfo) mpirun -n
 
 # Clean, keep TPLs
 RUN rm -rf quinoa

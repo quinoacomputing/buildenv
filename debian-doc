@@ -19,7 +19,7 @@ RUN cd quinoa && git submodule init && git submodule update --recursive && cd ex
 # Build TPLs
 RUN mkdir -p quinoa/external/build && cd quinoa/external/build && cmake -DENABLE_ROOT=true -DENABLE_OMEGA_H=true -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/home/quinoa/external/gnu -DCXXFLAGS=-w .. && make -sj$(grep -c processor /proc/cpuinfo)
 
-# Build doc
+# Build doc (comment this when verified, before docker push)
 #RUN cd quinoa && mkdir build && cd build && export PATH=/home/quinoa/tools/bin:$PATH && cmake -DTPL_DIR=/home/quinoa/external/gnu ../src && make -sj$(grep -c processor /proc/cpuinfo) doc
 
 # Clean, keep TPLs

@@ -1,13 +1,14 @@
 # vim: filetype=dockerfile:
-FROM debian:testing
+FROM debian:stable
 
 # Install system-wide prerequisites
-RUN apt-get update -y && apt-get install -y git cmake gcc gfortran g++ openmpi-bin libopenmpi-dev m4 autoconf ninja-build libpugixml-dev libpstreams-dev libboost-all-dev libblas-dev liblapack-dev liblapacke-dev libhypre-dev zlib1g-dev libhdf5-dev libhdf5-openmpi-dev binutils-dev libx11-dev libxpm-dev libxft-dev libxext-dev libdw-dev libdwarf-dev vim texlive texlive-latex-extra texlive-fonts-extra flex bison python3 python3-pygments python3-jinja2
+RUN apt-get update -y && apt-get install -y git cmake gcc gfortran g++ openmpi-bin libopenmpi-dev m4 autoconf ninja-build libpugixml-dev libpstreams-dev libboost-all-dev libblas-dev liblapack-dev liblapacke-dev zlib1g-dev libhdf5-dev libhdf5-openmpi-dev binutils-dev libx11-dev libxpm-dev libxft-dev libxext-dev libdw-dev libdwarf-dev vim texlive texlive-latex-extra texlive-fonts-extra flex bison python3 python3-pygments python3-jinja2
 
-# Setup user
+# User configuration
 RUN adduser --gecos "" --disabled-password quinoa
 USER quinoa
 WORKDIR /home/quinoa
+CMD ["/bin/bash"]
 
 # Clone quinoa
 RUN git clone --recurse-submodules http://github.com/quinoacomputing/quinoa.git
@@ -17,7 +18,7 @@ RUN cd quinoa && git checkout $COMMIT && git log -1 HEAD
 # Update submodules
 RUN cd quinoa && git submodule init && git submodule update --recursive && cd external && git submodule init && git submodule update --recursive && cd .. && git submodule status --recursive
 # Build TPLs
-RUN mkdir -p quinoa/external/build && cd quinoa/external/build && cmake -DENABLE_ROOT=true -DENABLE_OMEGA_H=true -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/home/quinoa/external/gnu -DCXXFLAGS=-w .. && make -sj$(grep -c processor /proc/cpuinfo)
+RUN mkdir -p quinoa/external/build && cd quinoa/external/build && cmake -DENABLE_ROOT=true -DENABLE_OMEGA_H=true -DCMAKE_INSTALL_PREFIX=/home/quinoa/external/gnu -DCXXFLAGS=-w .. && make -sj$(grep -c processor /proc/cpuinfo)
 
 # Build doc (comment this when verified, before docker push)
 #RUN cd quinoa && mkdir build && cd build && export PATH=/home/quinoa/tools/bin:$PATH && cmake -DTPL_DIR=/home/quinoa/external/gnu ../src && make -sj$(grep -c processor /proc/cpuinfo) doc

@@ -2,7 +2,7 @@
 FROM debian:stable
 
 # Install system-wide prerequisites
-RUN apt-get update -y && apt-get install -y git cmake g++ libc++1 libc++abi1 libc++-dev libc++abi-dev gfortran clang ninja-build m4 autoconf libtool libpugixml-dev libpstreams-dev libblas-dev liblapack-dev liblapacke-dev zlib1g-dev binutils-dev python-dev libx11-dev libxpm-dev libxft-dev libxext-dev libdw-dev libdwarf-dev vim
+RUN apt-get update -y && apt-get install -y git cmake g++ libc++1 libc++abi1 libc++-dev libc++abi-dev gfortran clang ninja-build m4 autoconf libtool libpugixml-dev libpstreams-dev libblas-dev liblapack-dev liblapacke-dev zlib1g-dev binutils-dev python-dev libx11-dev libxpm-dev libxft-dev libxext-dev libdw-dev libdwarf-dev vim liblua5.3-dev
 
 # Set environment var so the system-wide libc++ is found
 ENV LIBCXX_ROOT /usr/lib/llvm-7

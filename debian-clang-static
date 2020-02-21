@@ -2,7 +2,7 @@
 FROM debian:stable
 
 # Install system-wide prerequisites
-RUN apt-get update -y && apt-get install -y git cmake g++ gfortran clang ninja-build m4 autoconf libtool zlib1g-dev vim
+RUN apt-get update -y && apt-get install -y git cmake g++ gfortran clang ninja-build m4 autoconf libtool zlib1g-dev vim liblua5.3-dev
 
 # Install OpenMPI with gnu (for static builds)
 ADD http://download.open-mpi.org/release/open-mpi/v3.1/openmpi-3.1.3.tar.gz /openmpi/

@@ -10,10 +10,12 @@ USER quinoa
 WORKDIR /home/quinoa
 CMD ["/bin/bash"]
 
-ARG COMMIT
 # Clone quinoa
-RUN git clone -b $COMMIT --recurse-submodules http://github.com/quinoacomputing/quinoa.git
-RUN cd quinoa && git log -1 HEAD
+ARG BRANCH
+RUN git clone -b $BRANCH --recurse-submodules http://github.com/quinoacomputing/quinoa.git
+# Checkout commit to be tested
+ARG COMMIT
+RUN cd quinoa && git checkout $COMMIT && git log -1 HEAD
 # Update submodules
 RUN cd quinoa && git submodule init && git submodule update --recursive && cd external && git submodule init && git submodule update --recursive && cd .. && git submodule status --recursive
 # Build TPLs

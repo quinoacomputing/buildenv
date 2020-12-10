@@ -21,7 +21,8 @@ WORKDIR /home/quinoa
 CMD ["/bin/bash"]
 
 # Clone quinoa
-RUN git clone --recurse-submodules http://github.com/quinoacomputing/quinoa.git
+ARG BRANCH
+RUN git clone -b $BRANCH --recurse-submodules http://github.com/quinoacomputing/quinoa.git
 # Checkout commit to be tested
 ARG COMMIT
 RUN cd quinoa && git checkout $COMMIT && git log -1 HEAD

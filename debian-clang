@@ -5,7 +5,7 @@ FROM debian:stable
 RUN apt-get update -y && apt-get install -y git cmake g++ libc++1 libc++abi1 libc++-dev libc++abi-dev gfortran clang ninja-build m4 autoconf libtool libpugixml-dev libpstreams-dev libblas-dev liblapack-dev liblapacke-dev zlib1g-dev binutils-dev python-dev libx11-dev libxpm-dev libxft-dev libxext-dev libdw-dev libdwarf-dev vim liblua5.3-dev
 
 # Set environment var so the system-wide libc++ is found
-ENV LIBCXX_ROOT /usr/lib/llvm-7
+ENV LIBCXX_PATH /usr/lib/llvm-7
 
 # Install OpenMPI with gnu (for static builds)
 ADD http://download.open-mpi.org/release/open-mpi/v3.1/openmpi-3.1.3.tar.gz /openmpi/

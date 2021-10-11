@@ -1,0 +1,38 @@
+# vim: filetype=dockerfile:
+FROM debian:bullseye
+
+# Install system-wide prerequisites
+RUN apt-get update -y && apt-get install -y wget gnupg && wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB && apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB && rm GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+RUN echo 'deb https://apt.repos.intel.com/oneapi all main' >> /etc/apt/sources.list
+RUN apt-get update -y && apt-get install -y git cmake g++ intel-oneapi-compiler-fortran intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic intel-oneapi-mkl-devel ninja-build m4 autoconf libpugixml-dev libpstreams-dev libboost-all-dev libdw-dev libdwarf-dev gmsh vim liblua5.3-dev
+RUN wget http://ftp.us.debian.org/debian/pool/main/m/make-dfsg/make_4.2.1-1.2_amd64.deb && dpkg -i make_4.2.1-1.2_amd64.deb
+
+# Install OpenMPI using the intel compilers
+ADD https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.1.tar.gz /openmpi/
+RUN . /opt/intel/oneapi/setvars.sh intel64 && cd /openmpi/ && tar xzf openmpi-4.1.1.tar.gz && cd openmpi-4.1.1 && ./configure CC=icc CXX=icpc FC=ifort --prefix=/opt/openmpi && make -sj$(grep -c processor /proc/cpuinfo) install
+ENV PATH /opt/openmpi/bin:$PATH
+ENV LD_LIBRARY_PATH /opt/openmpi/lib:$LD_LIBRARY_PATH
+RUN rm -rf /openmpi
+
+# User configuration
+RUN adduser --gecos "" --disabled-password quinoa
+USER quinoa
+WORKDIR /home/quinoa
+CMD ["/bin/bash"]
+
+# Clone quinoa
+ARG BRANCH
+RUN git clone -b $BRANCH --recurse-submodules http://github.com/quinoacomputing/quinoa.git
+# Checkout commit to be tested
+ARG COMMIT
+RUN cd quinoa && git checkout $COMMIT && git log -1 HEAD
+# Update submodules
+RUN cd quinoa && git submodule init && git submodule update --recursive && cd external && git submodule init && git submodule update --recursive && cd .. && git submodule status --recursive
+# Build TPLs
+RUN . /opt/intel/oneapi/setvars.sh intel64 && export PATH=/opt/openmpi/bin:$PATH && mkdir -p quinoa/external/build && cd quinoa/external/build && cmake -DCMAKE_C_COMPILER=/opt/openmpi/bin/mpicc -DCMAKE_CXX_COMPILER=/opt/openmpi/bin/mpicxx -DCMAKE_Fortran_COMPILER=/opt/openmpi/bin/mpif90 -DENABLE_OMEGA_H=true -DENABLE_SOL2=true -DENABLE_EXAM2M=true -DCMAKE_INSTALL_PREFIX=/home/quinoa/external/intel .. && make -sj$(grep -c processor /proc/cpuinfo)
+
+# Build code, run tests (comment this when verified, before docker push)
+#RUN . /opt/intel/oneapi/setvars.sh intel64 && export PATH=/opt/openmpi/bin:$PATH && mkdir -p quinoa/build && cd quinoa/build && cmake -DCMAKE_C_COMPILER=/opt/openmpi/bin/mpicc -DCMAKE_CXX_COMPILER=/opt/openmpi/bin/mpicxx -DCMAKE_CXX_FLAGS=-Werror -DTPL_DIR=/home/quinoa/external/intel -GNinja -DENABLE_RNGTEST=false -DRUNNER=mpirun -DRUNNER_NCPUS_ARG=-n -DRUNNER_ARGS="--bind-to none -oversubscribe" ../src && ninja && mpirun -n $(grep -c processor /proc/cpuinfo) Main/unittest -v -q && ctest -j $(grep -c processor /proc/cpuinfo) --output-on-failure -LE extreme
+
+# Clean, keep TPLs
+RUN rm -rf quinoa
